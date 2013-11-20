@@ -1,4 +1,4 @@
+require 'forwardable'
 require 'beaneater'
 require 'bean_counter/version'
-
-module BeanCounter; end
+require 'bean_counter/core'
