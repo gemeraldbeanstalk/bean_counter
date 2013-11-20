@@ -6,11 +6,11 @@ require 'bean_counter/version'
 Gem::Specification.new do |spec|
   spec.name          = 'bean_counter'
   spec.version       = BeanCounter::VERSION
-  spec.authors       = ['freewrite.org']
-  spec.email         = ['dev@freewrite.org']
+  spec.authors       = ['gemeraldbeanstalk']
+  spec.email         = ['gemeraldbeanstalk@gmail.com  ']
   spec.description   = %q{Test::Unit assertions for Beaneater}
   spec.summary       = %q{BeanCounter provides additional assertions for testing Ruby code that relies on Beaneater}
-  spec.homepage      = 'https://github.com/freewrite/bean_counter'
+  spec.homepage      = 'https://github.com/gemeraldbeanstalk/bean_counter'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files`.split($/)
