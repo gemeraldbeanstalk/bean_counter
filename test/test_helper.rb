@@ -9,6 +9,8 @@ require 'mocha/setup'
 require 'minitest/autorun'
 require 'minitest/should'
 require 'bean_counter'
+BeanCounter.beanstalkd_url = 'beanstalk://localhost'
+
 
 class BeanCounter::TestCase < MiniTest::Should::TestCase
 
@@ -16,4 +18,8 @@ class BeanCounter::TestCase < MiniTest::Should::TestCase
     return @client ||= Beaneater::Connection.new('localhost:11300')
   end
 
+end
+
+
+class BeanCounter::KnownStrategy < BeanCounter::Strategy
 end
