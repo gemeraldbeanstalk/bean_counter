@@ -49,10 +49,6 @@ class StrategyTest < BeanCounter::TestCase
       end
 
 
-      should 'return class if strategy is a BeanCounterStrategy' do
-      end
-
-
       should 'return class form of strategy when given valid strategy' do
         [
           'BeanCounter::KnownStrategy',
@@ -82,13 +78,66 @@ class StrategyTest < BeanCounter::TestCase
 
     context 'interface methods' do
 
-      should 'define an interface but return NotImplementedError' do
+      should 'be an Enumberable but each should return NotImplementedError' do
         strategy = BeanCounter::Strategy.new
-        BeanCounter::Strategy.public_instance_methods(false).each do |method|
-          assert_raises(NotImplementedError) do
-            strategy.public_send(method)
+        assert_kind_of Enumerable, strategy
+        assert_raises(NotImplementedError) do
+          strategy.each
+        end
+      end
+
+    end
+
+
+    context 'select_with_limit' do
+
+      setup do
+        @strategy = BeanCounter::Strategy.new
+        @strategy.instance_eval do
+          extend Forwardable
+          def_delegators :collection, :each
+
+          @collection = (1..100).to_a
+
+          def self.collection
+            return @collection
           end
         end
+      end
+
+
+      should 'raise ArgumentError if no block given' do
+        assert_raises(ArgumentError) do
+          @strategy.select_with_limit
+        end
+      end
+
+
+      should 'return empty array if limit less than or equal to zero' do
+        [0, -5].each do |limit|
+          selected = @strategy.select_with_limit(limit) do |element|
+            raise 'Block should not have been called with limit <= 0'
+          end
+          assert_equal [], selected
+        end
+      end
+
+
+      should 'select matching elements up to the limit' do
+        first_five = @strategy.select_with_limit(5) do |element|
+          if element <= 10
+            element.even? && element <= 10
+          else
+            raise 'Unnecessary element traversal. Should have exited loop already'
+          end
+        end
+        assert_equal [2, 4, 6, 8, 10], first_five
+      end
+
+
+      should 'traverse whole collection and return matching elements if limit not reached' do
+        selected = @strategy.select_with_limit(@strategy.collection.length + 1) { true }
+        assert_equal((1..100).to_a, selected)
       end
 
     end

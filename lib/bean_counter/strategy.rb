@@ -1,6 +1,14 @@
 class BeanCounter::Strategy
 
+  include Enumerable
+
+  MATCHABLE_ATTRIBUTES = [
+    :age, :body, :buries, :delay, :id, :kicks, :pri, :releases,
+    :reserves, :state, :"time-left", :timeouts, :ttr, :tube,
+  ]
+
   @@strategies = {}
+
 
   def self.inherited(subclass)
     identifier = subclass.name || subclass.to_s[8, subclass.to_s.length - 9]
@@ -33,23 +41,22 @@ class BeanCounter::Strategy
   end
 
 
-  def delete_matched
+  def each
     raise NotImplementedError
   end
 
 
-  def enqueued?
-    raise NotImplementedError
+  def select_with_limit(limit = 1)
+    raise ArgumentError, 'Block required' unless block_given?
+    return [] if limit <= 0
+
+    selected = []
+    each do |element|
+      next unless yield(element)
+      selected << element
+      return selected if selected.length >= limit
+    end
   end
 
-
-  def enqueues?
-    raise NotImplementedError
-  end
-
-
-  def reset!
-    raise NotImplementedError
-  end
 
 end
