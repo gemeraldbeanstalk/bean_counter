@@ -90,6 +90,13 @@ class StrategyTest < BeanCounter::TestCase
       end
 
 
+      should 'return NotImplementedError for collect_new' do
+        assert_raises(NotImplementedError) do
+          @strategy.collect_new
+        end
+      end
+
+
       should 'return NotImplementedError for job_matches?' do
         assert_raises(NotImplementedError) do
           @strategy.job_matches?

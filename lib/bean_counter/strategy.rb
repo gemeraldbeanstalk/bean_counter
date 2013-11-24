@@ -41,13 +41,20 @@ class BeanCounter::Strategy
   end
 
 
-  # Provide means for enumerating jobs
+  # Provide a means for collecting jobs enqueued during the execution of the
+  # provided block
+  def collect_new
+    raise NotImplementedError
+  end
+
+
+  # Provide means for enumerating all jobs
   def each
     raise NotImplementedError
   end
 
 
-  # Differnt strategies may provide different interfaces for what jobs look like
+  # Different strategies may provide different interfaces for what jobs look like
   # so they should provide a custom method to determine if a job matches
   # a supplied hash of attributes
   def job_matches?
