@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'securerandom'
 
 class ClimbTest < BeanCounter::TestCase
 
@@ -33,7 +34,6 @@ class ClimbTest < BeanCounter::TestCase
         selected = @strategy.select_with_limit(1) do |element|
           if element.body == client_id
             found = true
-            true
           else
             raise 'Unnecessary element traversal. Should have exited loop already' if found
           end
@@ -47,7 +47,134 @@ class ClimbTest < BeanCounter::TestCase
 
     end
 
+  end
 
+
+  context '#job_matches?' do
+
+    setup do
+      @tube_name = SecureRandom.uuid
+      @message = SecureRandom.uuid
+      client.transmit("use #{@tube_name}")
+      client.transmit("watch #{@tube_name}")
+      client.transmit('ignore default')
+      @job = client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")
+      @strategy_job = StalkClimber::Job.new(@job)
+      # Update job state so everything is cached
+      @strategy_job.age
+      @strategy_job.body
+    end
+
+
+    teardown do
+      begin
+        client.transmit("delete #{@job[:id]}")
+      rescue Beaneater::NotFoundError
+      end
+    end
+
+
+    should 'match string fields using string or regex' do
+      job_stats = client.transmit("stats-job #{@job[:id]}")[:body]
+      {
+        :body => @message,
+        :state => job_stats['state'],
+        :tube => @tube_name,
+      }.each_pair do |key, value|
+        assert @strategy.job_matches?(@strategy_job, key => value)
+        assert @strategy.job_matches?(@strategy_job, key => %r[#{value[2, 3]}])
+        refute @strategy.job_matches?(@strategy_job, key => 'foobar')
+        refute @strategy.job_matches?(@strategy_job, key => /foobar/)
+      end
+    end
+
+
+    should 'match integer fields using integer or range' do
+      job_stats = client.transmit("stats-job #{@job[:id]}")[:body]
+      verify_job_attrs({
+        :age => job_stats['age'],
+        :buries => job_stats['buries'],
+        :delay => job_stats['delay'],
+        :id => @job[:id].to_i,
+        :kicks => job_stats['kicks'],
+        :pri => job_stats['pri'],
+        :releases => job_stats['releases'],
+        :reserves => job_stats['reserves'],
+        :'time-left' => job_stats['time-left'],
+        :timeouts => job_stats['timeouts'],
+        :ttr => job_stats['ttr'],
+      })
+    end
+
+
+    should 'match integer fields using integer or range (with more stubs)' do
+      job_attrs = {
+        :age => 100,
+        :buries => 101,
+        :delay => 102,
+        :id => 12345,
+        :kicks => 103,
+        :pri => 104,
+        :releases => 105,
+        :reserves => 106,
+        :timeouts => 108,
+        :ttr => 109,
+      }
+      # Mocha can't handle time-left :(
+      @strategy_job.instance_eval { define_singleton_method(:'time-left') { return 107 } }
+      job_attrs.each_pair { |key, value| @strategy_job.expects(key).times(8).returns(value) }
+      @strategy_job.expects(:exists?).times(40).returns(true)
+      verify_job_attrs(job_attrs)
+    end
+
+
+    should 'not try to match on non-matachable attributes' do
+      # Called once to refresh job state before checking match
+      @strategy_job.expects(:exists?).once.returns(true)
+
+      # Would be called but skipped because of expectation on exists?
+      @strategy_job.expects(:connection).never
+      @strategy_job.expects(:stats).never
+
+      # Should never be called
+      @strategy_job.expects(:delete).never
+
+      assert @strategy.job_matches?(@strategy_job, {
+        :body => @message,
+        :connection => 'foo',
+        :delete => 'bar',
+        :exists? => 'baz',
+        :stats => 'boom',
+      })
+    end
+
+
+    should 'not match job deleted after it was cached' do
+      client.transmit("delete #{@job[:id]}")
+      refute @strategy.job_matches?(@strategy_job, :body => @message)
+    end
+
+
+    should 'match against updated job stats' do
+      pri = 1024
+      delay = 2048
+      job = nil
+      timeout(1) do
+        job = client.transmit('reserve')
+      end
+      client.transmit("release #{job[:id]} #{pri} #{delay}")
+      assert @strategy.job_matches?(@strategy_job, {
+        :body => @message,
+        :delay => (delay - 2)..delay,
+        :pri => pri,
+        :state => 'delayed',
+      })
+      refute @strategy.job_matches?(@strategy_job, {
+        :body => @message,
+        :delay => 0,
+        :pri => 0,
+      })
+    end
 
   end
 
@@ -62,6 +189,16 @@ class ClimbTest < BeanCounter::TestCase
       assert_equal BeanCounter::Strategy::Climb::TEST_TUBE, @strategy.send(:test_tube)
     end
 
+  end
+
+
+  def verify_job_attrs(job_attrs)
+    job_attrs.each_pair do |key, value|
+      assert @strategy.job_matches?(@strategy_job, key => value), "Expected #{key} (#{@strategy_job.send(key)}) to match #{value}"
+      assert @strategy.job_matches?(@strategy_job, key => (value - 5)..(value + 1)), "Expected #{key} (#{@strategy_job.send(key)}) to match #{value} +/-5"
+      refute @strategy.job_matches?(@strategy_job, key => value - 1),  "Expected #{key} (#{@strategy_job.send(key)}) to not match #{value}"
+      refute @strategy.job_matches?(@strategy_job, key => (value + 100)..(value + 200)),  "Expected #{key} (#{@strategy_job.send(key)}) to not match #{value + 100}..#{value + 200}"
+    end
   end
 
 end

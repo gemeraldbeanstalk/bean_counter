@@ -11,6 +11,13 @@ class BeanCounter::Strategy::Climb < BeanCounter::Strategy
   def_delegators :climber, :each
 
 
+  def job_matches?(job, opts = {})
+    # Refresh job state/stats before checking match
+    return false unless job.exists?
+    return (opts.keys & MATCHABLE_ATTRIBUTES).all? {|key| opts[key] === job.send(key) }
+  end
+
+
   protected
 
   def climber
