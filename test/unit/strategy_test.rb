@@ -78,11 +78,21 @@ class StrategyTest < BeanCounter::TestCase
 
     context 'interface methods' do
 
+      setup do
+        @strategy = BeanCounter::Strategy.new
+      end
+
       should 'be an Enumberable but each should return NotImplementedError' do
-        strategy = BeanCounter::Strategy.new
-        assert_kind_of Enumerable, strategy
+        assert_kind_of Enumerable, @strategy
         assert_raises(NotImplementedError) do
-          strategy.each
+          @strategy.each
+        end
+      end
+
+
+      should 'return NotImplementedError for job_matches?' do
+        assert_raises(NotImplementedError) do
+          @strategy.job_matches?
         end
       end
 

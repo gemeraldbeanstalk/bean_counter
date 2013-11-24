@@ -41,7 +41,16 @@ class BeanCounter::Strategy
   end
 
 
+  # Provide means for enumerating jobs
   def each
+    raise NotImplementedError
+  end
+
+
+  # Differnt strategies may provide different interfaces for what jobs look like
+  # so they should provide a custom method to determine if a job matches
+  # a supplied hash of attributes
+  def job_matches?
     raise NotImplementedError
   end
 
