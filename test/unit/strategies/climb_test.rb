@@ -49,6 +49,48 @@ class ClimbTest < BeanCounter::TestCase
 
   end
 
+  context '#collect_new' do
+
+    should 'raise ArgumentError unless block given' do
+      assert_raises(ArgumentError) do
+        @strategy.collect_new
+      end
+    end
+
+
+    should 'return empty array if no new jobs enqueued' do
+      new_jobs = @strategy.collect_new {}
+      assert_equal [], new_jobs
+    end
+
+
+    should 'return only jobs enqueued during block execution' do
+      @tube_name = SecureRandom.uuid
+      client.transmit("use #{@tube_name}")
+      client.transmit("watch #{@tube_name}")
+      client.transmit('ignore default')
+      message = SecureRandom.uuid
+      all_jobs = []
+      all_jobs << client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")[:id].to_i
+
+      jobs = []
+      new_jobs = @strategy.collect_new do
+        5.times do
+          message = SecureRandom.uuid
+          job_id = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")[:id].to_i
+          jobs << job_id
+          all_jobs << job_id
+        end
+      end
+
+      message = SecureRandom.uuid
+      all_jobs << client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")[:id].to_i
+      assert_equal new_jobs.map(&:id), jobs
+      all_jobs.each { |job_id| client.transmit("delete #{job_id}") }
+    end
+
+  end
+
 
   context '#job_matches?' do
 
