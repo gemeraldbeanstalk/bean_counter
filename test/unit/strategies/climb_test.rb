@@ -92,6 +92,31 @@ class ClimbTest < BeanCounter::TestCase
   end
 
 
+  context '#delete_job' do
+
+    should 'delete the provided job' do
+      message = SecureRandom.uuid
+      job = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")
+      strategy_job = StalkClimber::Job.new(job)
+      @strategy.delete_job(strategy_job)
+      refute strategy_job.exists?
+      assert_raises(Beaneater::NotFoundError) do
+        client.transmit("stats-job #{job[:id]}")
+      end
+    end
+
+
+    should 'not complain if job already deleted' do
+      message = SecureRandom.uuid
+      job = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")
+      strategy_job = StalkClimber::Job.new(job)
+      client.transmit("delete #{job[:id]}")
+      @strategy.delete_job(strategy_job)
+      refute strategy_job.exists?
+    end
+
+  end
+
   context '#job_matches?' do
 
     setup do

@@ -26,6 +26,11 @@ class BeanCounter::Strategy::Climb < BeanCounter::Strategy
   end
 
 
+  def delete_job(job)
+    job.delete
+  end
+
+
   def job_matches?(job, opts = {})
     # Refresh job state/stats before checking match
     return false unless job.exists?
