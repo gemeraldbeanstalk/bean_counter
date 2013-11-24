@@ -48,6 +48,13 @@ class BeanCounter::Strategy
   end
 
 
+  # Provide a means for deleting a job specific to the job interface used by
+  # the strategy
+  def delete_job
+    raise NotImplementedError
+  end
+
+
   # Provide means for enumerating all jobs
   def each
     raise NotImplementedError

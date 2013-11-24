@@ -97,6 +97,13 @@ class StrategyTest < BeanCounter::TestCase
       end
 
 
+      should 'return NotImplementedError for delete_job' do
+        assert_raises(NotImplementedError) do
+          @strategy.delete_job
+        end
+      end
+
+
       should 'return NotImplementedError for job_matches?' do
         assert_raises(NotImplementedError) do
           @strategy.job_matches?
