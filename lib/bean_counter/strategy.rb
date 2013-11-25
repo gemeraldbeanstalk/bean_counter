@@ -69,6 +69,12 @@ class BeanCounter::Strategy
   end
 
 
+  # Provide a means for pretty printing of strategy job
+  def pretty_print_job
+    raise NotImplementedError
+  end
+
+
   def select_with_limit(limit = 1)
     raise ArgumentError, 'Block required' unless block_given?
     return [] if limit <= 0

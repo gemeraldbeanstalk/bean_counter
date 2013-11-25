@@ -84,29 +84,14 @@ class StrategyTest < BeanCounter::TestCase
 
       should 'be an Enumberable but each should return NotImplementedError' do
         assert_kind_of Enumerable, @strategy
-        assert_raises(NotImplementedError) do
-          @strategy.each
-        end
       end
 
 
-      should 'return NotImplementedError for collect_new' do
-        assert_raises(NotImplementedError) do
-          @strategy.collect_new
-        end
-      end
-
-
-      should 'return NotImplementedError for delete_job' do
-        assert_raises(NotImplementedError) do
-          @strategy.delete_job
-        end
-      end
-
-
-      should 'return NotImplementedError for job_matches?' do
-        assert_raises(NotImplementedError) do
-          @strategy.job_matches?
+      should 'return NotImplementedError for interface methods' do
+        %w[collect_new delete_job each job_matches? pretty_print_job].each do |method|
+          assert_raises(NotImplementedError, "Expected strategy to raise NotImplementedError for #{method}") do
+            @strategy.send(method)
+          end
         end
       end
 
