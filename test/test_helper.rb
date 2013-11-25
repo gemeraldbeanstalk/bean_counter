@@ -9,6 +9,7 @@ require 'mocha/setup'
 require 'minitest/autorun'
 require 'minitest/should'
 require 'bean_counter'
+require 'bean_counter/mini_test'
 
 # Open TCP connection with beanstalkd server prevents
 # JRuby timeout from killing thread. Has some weird
@@ -38,6 +39,7 @@ BeanCounter.beanstalkd_url = 'beanstalk://localhost'
 
 class BeanCounter::TestCase < MiniTest::Should::TestCase
 
+  include BeanCounter::MiniTest
   include Timeout
 
 
