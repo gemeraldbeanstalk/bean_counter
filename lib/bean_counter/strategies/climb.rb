@@ -37,6 +37,11 @@ class BeanCounter::Strategy::Climb < BeanCounter::Strategy
     return (opts.keys & MATCHABLE_ATTRIBUTES).all? {|key| opts[key] === job.send(key) }
   end
 
+
+  def pretty_print_job(job)
+    return job.to_h.to_s
+  end
+
   protected
 
   def climber

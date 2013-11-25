@@ -16,7 +16,7 @@ class ClimbTest < BeanCounter::TestCase
           break
         end
       rescue NotImplementedError
-        raise "Expected subclass of Strategy, BeanCounter::Strategy::Climb,  to provide #each"
+        raise "Expected subclass of Strategy, BeanCounter::Strategy::Climb, to provide #each"
       end
     end
 
@@ -241,6 +241,46 @@ class ClimbTest < BeanCounter::TestCase
         :delay => 0,
         :pri => 0,
       })
+    end
+
+  end
+
+
+  context '#pretty_print_job' do
+
+    should 'return expected text representation of job' do
+      job_body = SecureRandom.uuid
+      stats_body = {
+        'age' => age = 3,
+        'body' => job_body, # Will be ignored during job init
+        'buries' => buries = 0,
+        'delay' => delay = 0,
+        'id' => id = 4412,
+        'kicks' => kicks = 0,
+        'pri' => pri = 4294967295,
+        'releases' => releases = 0,
+        'reserves' => reserves = 0,
+        'state' => state = 'ready',
+        'time-left' => time_left = 0,
+        'timeouts' => timeouts = 0,
+        'ttr'  => ttr = 300,
+        'tube' => tube = 'default',
+      }
+      stats_response = {
+        :body => stats_body,
+        :connection => client,
+        :id => 149,
+        :status => 'OK',
+      }
+      job = StalkClimber::Job.new(stats_response)
+      job.instance_variable_set(:@body, job_body)
+      expected = %W[
+        :age=>#{age} :body=>"#{job_body}" :buries=>#{buries} :connection=>#{client.to_s}
+        :delay=>#{delay} :id=>#{id} :kicks=>#{kicks} :pri=>#{pri} :releases=>#{releases}
+        :reserves=>#{reserves} :state=>"#{state}" :"time-left"=>#{time_left}
+        :timeouts=>#{timeouts} :ttr=>#{ttr} :tube=>"#{tube}"
+      ].join(', ')
+      assert_equal "{#{expected}}", @strategy.pretty_print_job(job)
     end
 
   end
