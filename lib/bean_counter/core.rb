@@ -3,11 +3,7 @@ module BeanCounter
   DEFAULT_STRATEGY = :'BeanCounter::Strategy::Climb'
 
   class << self
-    extend Forwardable
-
     attr_writer :beanstalkd_url
-
-    def_delegators :strategy, :delete_matched, :reset!
   end
 
   # Adapted from Beaneater::Pool
@@ -22,6 +18,13 @@ module BeanCounter
 
   def self.default_strategy
     return @default_strategy ||= BeanCounter::Strategy.materialize_strategy(DEFAULT_STRATEGY)
+  end
+
+
+  def self.reset!(tube_name = nil)
+    strategy.each do |job|
+      strategy.delete_job(job) if tube_name.nil? || strategy.job_matches?(job, :tube => tube_name)
+    end
   end
 
 

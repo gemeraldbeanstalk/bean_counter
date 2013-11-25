@@ -4,7 +4,7 @@ require 'securerandom'
 class MiniTestTest < BeanCounter::TestCase
 
   setup do
-    reset!
+    BeanCounter.reset!
     @tube_name = SecureRandom.uuid
     client.transmit("use #{@tube_name}")
     @message = SecureRandom.uuid
@@ -160,59 +160,6 @@ class MiniTestTest < BeanCounter::TestCase
         assert_equal 2, @refute_calls
       end
 
-    end
-
-  end
-
-
-  context 'reset!' do
-
-    should 'remove all jobs from all tubes when not given a tube name' do
-      jobs = []
-      jobs << client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id]
-      client.transmit("watch #{@tube_name}")
-      client.transmit('ignore default')
-      timeout(1) do
-        job_id = client.transmit('reserve')[:id]
-        client.transmit("bury #{job_id} 0")
-      end
-      5.times do
-        client.transmit("use #{SecureRandom.uuid}")
-        jobs << client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id]
-      end
-      client.transmit("use #{SecureRandom.uuid}")
-      jobs << client.transmit("put 0 1024 120 #{@message.bytesize}\r\n#{@message}")[:id]
-
-      reset!
-      jobs.each do |job_id|
-        assert_raises(Beaneater::NotFoundError) do
-          client.transmit("stats-job #{job_id}")
-        end
-      end
-    end
-
-
-    should 'only remove jobs from the specified tube when given a tube name' do
-      jobs = []
-      jobs << client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id]
-      client.transmit("watch #{@tube_name}")
-      client.transmit('ignore default')
-      timeout(1) do
-        job_id = client.transmit('reserve')[:id]
-        client.transmit("bury #{job_id} 0")
-      end
-      jobs << client.transmit("put 0 1024 120 #{@message.bytesize}\r\n#{@message}")[:id]
-
-      client.transmit("use #{SecureRandom.uuid}")
-      other_job_id = client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id].to_i
-
-      reset!(@tube_name)
-      jobs.each do |job_id|
-        assert_raises(Beaneater::NotFoundError) do
-          client.transmit("stats-job #{job_id}")
-        end
-      end
-      assert_equal other_job_id, client.transmit("stats-job #{other_job_id}")[:body]['id']
     end
 
   end

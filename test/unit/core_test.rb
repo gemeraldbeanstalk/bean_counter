@@ -49,6 +49,63 @@ class CoreTest < BeanCounter::TestCase
   end
 
 
+  context '::reset!' do
+
+    setup do
+      @tube_name = SecureRandom.uuid
+      client.transmit("use #{@tube_name}")
+      @message = SecureRandom.uuid
+      client.transmit("watch #{@tube_name}")
+      client.transmit('ignore default')
+    end
+
+    should 'remove all jobs from all tubes when not given a tube name' do
+      jobs = []
+      jobs << client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id]
+      timeout(1) do
+        job_id = client.transmit('reserve')[:id]
+        client.transmit("bury #{job_id} 0")
+      end
+      5.times do
+        client.transmit("use #{SecureRandom.uuid}")
+        jobs << client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id]
+      end
+      client.transmit("use #{SecureRandom.uuid}")
+      jobs << client.transmit("put 0 1024 120 #{@message.bytesize}\r\n#{@message}")[:id]
+
+      BeanCounter.reset!
+      jobs.each do |job_id|
+        assert_raises(Beaneater::NotFoundError) do
+          client.transmit("stats-job #{job_id}")
+        end
+      end
+    end
+
+
+    should 'only remove jobs from the specified tube when given a tube name' do
+      jobs = []
+      jobs << client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id]
+      timeout(1) do
+        job_id = client.transmit('reserve')[:id]
+        client.transmit("bury #{job_id} 0")
+      end
+      jobs << client.transmit("put 0 1024 120 #{@message.bytesize}\r\n#{@message}")[:id]
+
+      client.transmit("use #{SecureRandom.uuid}")
+      other_job_id = client.transmit("put 0 0 120 #{@message.bytesize}\r\n#{@message}")[:id].to_i
+
+      BeanCounter.reset!(@tube_name)
+      jobs.each do |job_id|
+        assert_raises(Beaneater::NotFoundError) do
+          client.transmit("stats-job #{job_id}")
+        end
+      end
+      assert_equal other_job_id, client.transmit("stats-job #{other_job_id}")[:body]['id']
+    end
+
+  end
+
+
   context '::strategies' do
 
     should 'return strategies from BeanCounter::Strategy' do

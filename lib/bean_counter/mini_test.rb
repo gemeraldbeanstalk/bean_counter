@@ -53,22 +53,16 @@ module BeanCounter::MiniTest
     found = collection.detect do |job|
       strategy.job_matches?(job, opts)
     end
-    refute(found, [
+    message = [
       "Assertion failed: Expected no jobs found matching #{opts.to_s},",
       "found #{strategy.pretty_print_job(found)}",
-    ].join(' '))
+    ].join(' ') unless found.nil?
+    refute(found, message || '')
   end
 
 
   def strategy
     return BeanCounter.strategy
-  end
-
-
-  def reset!(tube_name = nil)
-    strategy.each do |job|
-      strategy.delete_job(job) if tube_name.nil? || strategy.job_matches?(job, :tube => tube_name)
-    end
   end
 
 end
