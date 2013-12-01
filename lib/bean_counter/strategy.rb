@@ -1,6 +1,6 @@
 class BeanCounter::Strategy
 
-  MATCHABLE_ATTRIBUTES = [
+  MATCHABLE_JOB_ATTRIBUTES = [
     :age, :body, :buries, :delay, :id, :kicks, :pri, :releases,
     :reserves, :state, :"time-left", :timeouts, :ttr, :tube,
   ]
@@ -41,7 +41,7 @@ class BeanCounter::Strategy
 
   # Provide a means for collecting jobs enqueued during the execution of the
   # provided block
-  def collect_new
+  def collect_new_jobs
     raise NotImplementedError
   end
 

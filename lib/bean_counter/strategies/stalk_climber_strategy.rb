@@ -11,7 +11,7 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
   def_delegators :climber, :jobs
 
 
-  def collect_new
+  def collect_new_jobs
     raise ArgumentError, 'Block required' unless block_given?
 
     min_ids = climber.max_job_ids
@@ -35,7 +35,7 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
   def job_matches?(job, opts = {})
     # Refresh job state/stats before checking match
     return false unless job.exists?
-    return (opts.keys & MATCHABLE_ATTRIBUTES).all? {|key| opts[key] === job.send(key.to_s.gsub(/-/, '_')) }
+    return (opts.keys & MATCHABLE_JOB_ATTRIBUTES).all? {|key| opts[key] === job.send(key.to_s.gsub(/-/, '_')) }
   end
 
 

@@ -24,17 +24,17 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
   end
 
 
-  context '#collect_new' do
+  context '#collect_new_jobs' do
 
     should 'raise ArgumentError unless block given' do
       assert_raises(ArgumentError) do
-        @strategy.collect_new
+        @strategy.collect_new_jobs
       end
     end
 
 
     should 'return empty array if no new jobs enqueued' do
-      new_jobs = @strategy.collect_new {}
+      new_jobs = @strategy.collect_new_jobs {}
       assert_equal [], new_jobs
     end
 
@@ -49,7 +49,7 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
       all_jobs << client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")[:id].to_i
 
       jobs = []
-      new_jobs = @strategy.collect_new do
+      new_jobs = @strategy.collect_new_jobs do
         5.times do
           message = SecureRandom.uuid
           job_id = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")[:id].to_i

@@ -8,7 +8,7 @@ module BeanCounter::MiniTest
   def assert_enqueues(opts = {})
     raise ArgumentError, 'Block required' unless block_given?
 
-    found = strategy.collect_new { yield }
+    found = strategy.collect_new_jobs { yield }
     enqueue_assertion(found, opts)
   end
 
@@ -21,7 +21,7 @@ module BeanCounter::MiniTest
   def refute_enqueues(opts = {})
     raise ArgumentError, 'Block required' unless block_given?
 
-    found = strategy.collect_new { yield }
+    found = strategy.collect_new_jobs { yield }
     enqueue_refutation(found, opts)
   end
 
