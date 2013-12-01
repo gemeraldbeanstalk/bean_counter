@@ -1,10 +1,10 @@
 require 'test_helper'
 require 'securerandom'
 
-class ClimbTest < BeanCounter::TestCase
+class StalkClimberStrategyTest < BeanCounter::TestCase
 
   setup do
-    @strategy = BeanCounter::Strategy::Climb.new
+    @strategy = BeanCounter::Strategy::StalkClimberStrategy.new
   end
 
   context 'Enumerable' do
@@ -16,7 +16,7 @@ class ClimbTest < BeanCounter::TestCase
           break
         end
       rescue NotImplementedError
-        raise "Expected subclass of Strategy, BeanCounter::Strategy::Climb, to provide #each"
+        raise "Expected subclass of Strategy, BeanCounter::Strategy::StalkClimberStrategy, to provide #each"
       end
     end
 
@@ -289,11 +289,11 @@ class ClimbTest < BeanCounter::TestCase
   context '#test_tube' do
 
     should 'return default test tube unless set otherwise' do
-      assert_equal BeanCounter::Strategy::Climb::TEST_TUBE, @strategy.send(:test_tube)
+      assert_equal BeanCounter::Strategy::StalkClimberStrategy::TEST_TUBE, @strategy.send(:test_tube)
       @strategy.test_tube = new_tube = 'bean_counter_stalk_climber_test_new'
       assert_equal new_tube, @strategy.send(:test_tube)
       @strategy.test_tube = nil
-      assert_equal BeanCounter::Strategy::Climb::TEST_TUBE, @strategy.send(:test_tube)
+      assert_equal BeanCounter::Strategy::StalkClimberStrategy::TEST_TUBE, @strategy.send(:test_tube)
     end
 
   end

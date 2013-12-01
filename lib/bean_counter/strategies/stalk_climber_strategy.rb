@@ -1,6 +1,6 @@
 require 'stalk_climber'
 
-class BeanCounter::Strategy::Climb < BeanCounter::Strategy
+class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
 
   extend Forwardable
 

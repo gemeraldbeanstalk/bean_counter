@@ -1,6 +1,6 @@
 module BeanCounter
 
-  DEFAULT_STRATEGY = :'BeanCounter::Strategy::Climb'
+  DEFAULT_STRATEGY = :'BeanCounter::Strategy::StalkClimberStrategy'
 
   class << self
     attr_writer :beanstalkd_url
