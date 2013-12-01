@@ -22,7 +22,7 @@ module BeanCounter
 
 
   def self.reset!(tube_name = nil)
-    strategy.each do |job|
+    strategy.jobs.each do |job|
       strategy.delete_job(job) if tube_name.nil? || strategy.job_matches?(job, :tube => tube_name)
     end
   end

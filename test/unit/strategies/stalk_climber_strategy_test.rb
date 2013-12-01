@@ -7,47 +7,22 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
     @strategy = BeanCounter::Strategy::StalkClimberStrategy.new
   end
 
-  context 'Enumerable' do
+  context '#jobs' do
 
-    should 'honor Enumberable contract' do
-      assert @strategy.respond_to?(:each)
+    should 'implement #jobs' do
+      assert @strategy.respond_to?(:jobs)
+      assert_kind_of Enumerable, @strategy.jobs
       begin
-        @strategy.each do
+        @strategy.jobs.each do
           break
         end
       rescue NotImplementedError
-        raise "Expected subclass of Strategy, BeanCounter::Strategy::StalkClimberStrategy, to provide #each"
+        raise 'Expected subclass of Strategy, BeanCounter::Strategy::StalkClimberStrategy, to provide #jobs enumerator'
       end
-    end
-
-
-    context 'select_with_limit' do
-
-      should 'avoid unnecessary element traversal' do
-        client_id = client.object_id
-        job_ids = (1..3).map do |index|
-          message = (index.even? ? client_id : client_id - rand(100)).to_s
-          client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")[:id]
-        end
-        client_id = client_id.to_s
-        found = false
-        selected = @strategy.select_with_limit(1) do |element|
-          if element.body == client_id
-            found = true
-          else
-            raise 'Unnecessary element traversal. Should have exited loop already' if found
-          end
-        end
-        job = selected.first
-        assert_equal client_id, job.body
-        job_ids.each do |id|
-          client.transmit("delete #{id}")
-        end
-      end
-
     end
 
   end
+
 
   context '#collect_new' do
 
@@ -274,11 +249,12 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
       }
       job = StalkClimber::Job.new(stats_response)
       job.instance_variable_set(:@body, job_body)
+      job.connection.expects(:transmit).once.returns(stats_response)
       expected = %W[
-        :age=>#{age} :body=>"#{job_body}" :buries=>#{buries} :connection=>#{client.to_s}
-        :delay=>#{delay} :id=>#{id} :kicks=>#{kicks} :pri=>#{pri} :releases=>#{releases}
-        :reserves=>#{reserves} :state=>"#{state}" :"time-left"=>#{time_left}
-        :timeouts=>#{timeouts} :ttr=>#{ttr} :tube=>"#{tube}"
+        "age"=>#{age} "body"=>"#{job_body}" "buries"=>#{buries} "connection"=>#{client.to_s}
+        "delay"=>#{delay} "id"=>#{id} "kicks"=>#{kicks} "pri"=>#{pri} "releases"=>#{releases}
+        "reserves"=>#{reserves} "state"=>"#{state}" "time-left"=>#{time_left}
+        "timeouts"=>#{timeouts} "ttr"=>#{ttr} "tube"=>"#{tube}"
       ].join(', ')
       assert_equal "{#{expected}}", @strategy.pretty_print_job(job)
     end
@@ -301,10 +277,11 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
 
   def verify_job_attrs(job_attrs)
     job_attrs.each_pair do |key, value|
-      assert @strategy.job_matches?(@strategy_job, key => value), "Expected #{key} (#{@strategy_job.send(key)}) to match #{value}"
-      assert @strategy.job_matches?(@strategy_job, key => (value - 5)..(value + 1)), "Expected #{key} (#{@strategy_job.send(key)}) to match #{value} +/-5"
-      refute @strategy.job_matches?(@strategy_job, key => value - 1),  "Expected #{key} (#{@strategy_job.send(key)}) to not match #{value}"
-      refute @strategy.job_matches?(@strategy_job, key => (value + 100)..(value + 200)),  "Expected #{key} (#{@strategy_job.send(key)}) to not match #{value + 100}..#{value + 200}"
+      sanitized_key = key.to_s.gsub(/-/, '_')
+      assert @strategy.job_matches?(@strategy_job, key => value), "Expected #{key} (#{@strategy_job.send(sanitized_key)}) to match #{value}"
+      assert @strategy.job_matches?(@strategy_job, key => (value - 5)..(value + 1)), "Expected #{key} (#{@strategy_job.send(sanitized_key)}) to match #{value} +/-5"
+      refute @strategy.job_matches?(@strategy_job, key => value - 1),  "Expected #{key} (#{@strategy_job.send(sanitized_key)}) to not match #{value}"
+      refute @strategy.job_matches?(@strategy_job, key => (value + 100)..(value + 200)),  "Expected #{key} (#{@strategy_job.send(sanitized_key)}) to not match #{value + 100}..#{value + 200}"
     end
   end
 

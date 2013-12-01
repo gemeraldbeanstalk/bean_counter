@@ -1,7 +1,7 @@
 module BeanCounter::MiniTest
 
   def assert_enqueued(opts = {})
-    enqueue_assertion(strategy, opts)
+    enqueue_assertion(strategy.jobs, opts)
   end
 
 
@@ -14,7 +14,7 @@ module BeanCounter::MiniTest
 
 
   def refute_enqueued(opts = {})
-    enqueue_refutation(strategy, opts)
+    enqueue_refutation(strategy.jobs, opts)
   end
 
 

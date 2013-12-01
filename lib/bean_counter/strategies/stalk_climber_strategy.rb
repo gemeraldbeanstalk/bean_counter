@@ -8,7 +8,7 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
 
   attr_writer :test_tube
 
-  def_delegators :climber, :each
+  def_delegators :climber, :jobs
 
 
   def collect_new
@@ -28,13 +28,14 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
 
   def delete_job(job)
     job.delete
+  rescue Beaneater::NotFoundError
   end
 
 
   def job_matches?(job, opts = {})
     # Refresh job state/stats before checking match
     return false unless job.exists?
-    return (opts.keys & MATCHABLE_ATTRIBUTES).all? {|key| opts[key] === job.send(key) }
+    return (opts.keys & MATCHABLE_ATTRIBUTES).all? {|key| opts[key] === job.send(key.to_s.gsub(/-/, '_')) }
   end
 
 
