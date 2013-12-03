@@ -13,6 +13,14 @@ module BeanCounter::MiniTest
   end
 
 
+  def assert_tube(opts = {})
+    match = strategy.tubes.any? do |tube|
+      strategy.tube_matches?(tube, opts)
+    end
+    assert match, "Assertion failed: No tubes found matching #{opts.to_s}"
+  end
+
+
   def refute_enqueued(opts = {})
     enqueue_refutation(strategy.jobs, opts)
   end
@@ -25,6 +33,20 @@ module BeanCounter::MiniTest
     enqueue_refutation(found, opts)
   end
 
+
+  def refute_tube(opts = {})
+    match = strategy.tubes.detect do |tube|
+      strategy.tube_matches?(tube, opts)
+    end
+    return assert(true) if match.nil?
+    assert(
+      false,
+      [
+        "Assertion failed: Expected no tubes matching #{opts.to_s},",
+        "found #{strategy.pretty_print_tube(match)}",
+      ].join(' ')
+    )
+  end
 
   private
 

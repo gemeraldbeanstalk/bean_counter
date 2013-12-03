@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'securerandom'
 
 class StalkClimberStrategyTest < BeanCounter::TestCase
 

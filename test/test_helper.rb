@@ -10,6 +10,7 @@ require 'minitest/autorun'
 require 'minitest/should'
 require 'bean_counter'
 require 'bean_counter/mini_test'
+require 'securerandom'
 
 # Open TCP connection with beanstalkd server prevents
 # JRuby timeout from killing thread. Has some weird
