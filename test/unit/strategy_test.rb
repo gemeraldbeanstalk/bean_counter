@@ -84,7 +84,7 @@ class StrategyTest < BeanCounter::TestCase
 
 
       should 'return NotImplementedError for interface methods' do
-        %w[collect_new_jobs delete_job jobs job_matches? pretty_print_job].each do |method|
+        %w[collect_new_jobs delete_job jobs job_matches? pretty_print_job pretty_print_tube tube_matches? tubes].each do |method|
           assert_raises(NotImplementedError, "Expected strategy to raise NotImplementedError for #{method}") do
             @strategy.send(method)
           end
