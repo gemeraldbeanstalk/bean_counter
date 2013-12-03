@@ -22,16 +22,17 @@ class CoreTest < BeanCounter::TestCase
       assert_equal new_url, BeanCounter.beanstalkd_url
       Beaneater.configuration.beanstalkd_url = original_url_beaneater
 
-      # Env beanstalkd_url is always turned into an array
-      new_url = 'beanstalk://env'
-      ENV['BEANSTALKD_URL'] = new_url
-      assert_equal [new_url], BeanCounter.beanstalkd_url
-      ENV['BEANSTALKD_URL'] = original_url_env
 
       new_url = 'beanstalk://bean_counter'
       BeanCounter.beanstalkd_url = new_url
       assert_equal new_url, BeanCounter.beanstalkd_url
       BeanCounter.beanstalkd_url = original_url_bean_counter
+
+      # Env beanstalkd_url is always turned into an array
+      new_url = 'beanstalk://env'
+      ENV['BEANSTALKD_URL'] = new_url
+      assert_equal [new_url], BeanCounter.beanstalkd_url
+      ENV['BEANSTALKD_URL'] = original_url_env
     end
 
   end
