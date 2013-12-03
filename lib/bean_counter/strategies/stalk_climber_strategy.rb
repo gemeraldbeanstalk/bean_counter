@@ -4,11 +4,22 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
 
   extend Forwardable
 
+  STATS_METHOD_NAMES = begin
+    attrs = (
+      BeanCounter::Strategy::MATCHABLE_JOB_ATTRIBUTES +
+      BeanCounter::Strategy::MATCHABLE_TUBE_ATTRIBUTES
+    ).map!(&:to_sym).uniq.sort
+    method_names = attrs.map {|method| method.to_s.gsub(/-/, '_').to_sym }
+    attr_methods = Hash[attrs.zip(method_names)]
+    attr_methods[:pause] = :pause_time
+    attr_methods
+ end
+
   TEST_TUBE = 'bean_counter_stalk_climber_test'
 
   attr_writer :test_tube
 
-  def_delegators :climber, :jobs
+  def_delegators :climber, :jobs, :tubes
 
 
   def collect_new_jobs
@@ -33,14 +44,22 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
 
 
   def job_matches?(job, opts = {})
-    # Refresh job state/stats before checking match
-    return false unless job.exists?
-    return (opts.keys & MATCHABLE_JOB_ATTRIBUTES).all? {|key| opts[key] === job.send(key.to_s.gsub(/-/, '_')) }
+    return matcher(MATCHABLE_JOB_ATTRIBUTES, job, opts)
   end
 
 
   def pretty_print_job(job)
     return job.to_h.to_s
+  end
+
+
+  def pretty_print_tube(tube)
+    return tube.to_h.to_s
+  end
+
+
+  def tube_matches?(tube, opts = {})
+    return matcher(MATCHABLE_TUBE_ATTRIBUTES, tube, opts)
   end
 
   protected
@@ -50,8 +69,22 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
   end
 
 
+  def matcher(valid_attributes, matchable_object, opts = {})
+    # Refresh state/stats before checking match
+    return false unless matchable_object.exists?
+    return (opts.keys & valid_attributes).all? do |key|
+      opts[key] === matchable_object.send(stats_method_name(key))
+    end
+  end
+
+
   def test_tube
     return @test_tube ||= TEST_TUBE
+  end
+
+
+  def stats_method_name(stats_attr)
+    return STATS_METHOD_NAMES[stats_attr.to_sym]
   end
 
 end
