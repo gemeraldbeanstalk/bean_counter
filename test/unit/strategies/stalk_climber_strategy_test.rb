@@ -68,11 +68,11 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
 
   context '#delete_job' do
 
-    should 'delete the provided job' do
+    should 'delete the provided job and return true' do
       message = SecureRandom.uuid
       job = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")
       strategy_job = StalkClimber::Job.new(job)
-      @strategy.delete_job(strategy_job)
+      assert @strategy.delete_job(strategy_job), 'Failed to delete job'
       refute strategy_job.exists?
       assert_raises(Beaneater::NotFoundError) do
         client.transmit("stats-job #{job[:id]}")
@@ -80,12 +80,29 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
     end
 
 
-    should 'not complain if job already deleted' do
+    should 'not complain and return true if job already deleted' do
       message = SecureRandom.uuid
       job = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")
       strategy_job = StalkClimber::Job.new(job)
       client.transmit("delete #{job[:id]}")
-      @strategy.delete_job(strategy_job)
+      assert @strategy.delete_job(strategy_job), 'Expected true return value after attempt to delete deleted job'
+      refute strategy_job.exists?
+    end
+
+
+    should 'return false if the job could not be deleted' do
+      tube_name = SecureRandom.uuid
+      client.transmit("use #{tube_name}")
+      client.transmit("watch #{tube_name}")
+      client.transmit('ignore default')
+      message = SecureRandom.uuid
+      job = client.transmit("put 0 0 120 #{message.bytesize}\r\n#{message}")
+      strategy_job = @strategy.jobs.detect{|strat_job| strat_job.body == message}
+      reserved_job = client.transmit('reserve')
+      assert_equal strategy_job.id, reserved_job[:id].to_i
+      refute @strategy.delete_job(strategy_job), 'Expected false return value after failed attempt to delete reserved job'
+      assert strategy_job.exists?
+      client.transmit("delete #{job[:id]}")
       refute strategy_job.exists?
     end
 
