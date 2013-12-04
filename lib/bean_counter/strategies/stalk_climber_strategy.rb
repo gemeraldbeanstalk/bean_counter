@@ -39,7 +39,9 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
 
   def delete_job(job)
     job.delete
+    return true
   rescue Beaneater::NotFoundError
+    return job.exists? ? false : true
   end
 
 

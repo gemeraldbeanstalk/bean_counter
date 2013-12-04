@@ -22,9 +22,12 @@ module BeanCounter
 
 
   def self.reset!(tube_name = nil)
+    partial_failure = false
     strategy.jobs.each do |job|
-      strategy.delete_job(job) if tube_name.nil? || strategy.job_matches?(job, :tube => tube_name)
+      success = strategy.delete_job(job) if tube_name.nil? || strategy.job_matches?(job, :tube => tube_name)
+      partial_failure ||= success
     end
+    return !partial_failure
   end
 
 
