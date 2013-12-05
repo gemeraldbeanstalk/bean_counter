@@ -188,12 +188,24 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
     end
 
 
+    should 'be able to match with a proc' do
+      matching_connection_proc = proc do |connection|
+        connection == client
+      end
+      assert @strategy.job_matches?(@strategy_job, :connection => matching_connection_proc)
+
+      failing_connection_proc = proc do |connection|
+        connection != client
+      end
+      refute @strategy.job_matches?(@strategy_job, :connection => failing_connection_proc)
+    end
+
+
     should 'not try to match on non-matachable attributes' do
       # Called once to refresh job state before checking match
       @strategy_job.expects(:exists?).once.returns(true)
 
       # Would be called but skipped because of expectation on exists?
-      @strategy_job.expects(:connection).never
       @strategy_job.expects(:stats).never
 
       # Should never be called
@@ -201,7 +213,6 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
 
       assert @strategy.job_matches?(@strategy_job, {
         :body => @message,
-        :connection => 'foo',
         :delete => 'bar',
         :exists? => 'baz',
         :stats => 'boom',

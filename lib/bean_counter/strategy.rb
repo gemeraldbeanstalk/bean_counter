@@ -1,22 +1,22 @@
 class BeanCounter::Strategy
 
-  MATCHABLE_JOB_ATTRIBUTES = [
-    :age, :body, :buries, :delay, :id, :kicks, :pri, :releases,
-    :reserves, :state, :'time-left', :timeouts, :ttr, :tube,
-    'age', 'body', 'buries', 'delay', 'id', 'kicks', 'pri', 'releases',
-    'reserves', 'state', 'time-left', 'timeouts', 'ttr', 'tube',
-  ]
+  MATCHABLE_JOB_ATTRIBUTES = begin
+      attrs = [
+      :age, :body, :buries, :connection, :delay, :id, :kicks, :pri, :releases,
+      :reserves, :state, :'time-left', :timeouts, :ttr, :tube,
+    ]
+    attrs.concat(attrs.map(&:to_s))
+  end
 
-  MATCHABLE_TUBE_ATTRIBUTES = [
-    :'cmd-delete', :'cmd-pause-tube', :'current-jobs-buried',
-    :'current-jobs-delayed', :'current-jobs-ready', :'current-jobs-reserved',
-    :'current-jobs-urgent', :'current-using', :'current-waiting',
-    :'current-watching', :name, :pause, :'pause-time-left', :'total-jobs',
-    'cmd-delete', 'cmd-pause-tube', 'current-jobs-buried',
-    'current-jobs-delayed', 'current-jobs-ready', 'current-jobs-reserved',
-    'current-jobs-urgent', 'current-using', 'current-waiting', 'current-watching',
-    'name', 'pause', 'pause-time-left', 'total-jobs',
-  ]
+  MATCHABLE_TUBE_ATTRIBUTES = begin
+    attrs = [
+      :'cmd-delete', :'cmd-pause-tube', :'current-jobs-buried',
+      :'current-jobs-delayed', :'current-jobs-ready', :'current-jobs-reserved',
+      :'current-jobs-urgent', :'current-using', :'current-waiting',
+      :'current-watching', :name, :pause, :'pause-time-left', :'total-jobs',
+    ]
+    attrs.concat(attrs.map(&:to_s))
+  end
 
   @@strategies = {}
 
