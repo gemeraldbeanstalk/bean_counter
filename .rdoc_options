@@ -2,6 +2,8 @@
 encoding: UTF-8
 static_path: []
 rdoc_include:
-- .
+- lib/
 charset: UTF-8
-exclude: !ruby/regexp /(?:\/test)/
+exclude: !ruby/regexp /(?:\/(?:test|coverage|doc))|(?:bean_counter.gemspec|(?:Gem|Rake)file|LICENSE|README\.md)/
+main_page: BeanCounter
+root: lib
