@@ -21,7 +21,7 @@ class BeanCounter::EnqueuedExpectation
       strategy.job_matches?(job, expected)
     end
 
-    expected_count? ? expected_count === found.length : !found.nil?
+    expected_count? ? expected_count === found.to_a.length : !found.nil?
   end
 
 
