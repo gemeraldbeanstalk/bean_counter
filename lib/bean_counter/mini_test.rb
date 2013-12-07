@@ -33,7 +33,7 @@ module BeanCounter::MiniTest
   #
   #   assert_enqueued('state' => 'buried', 'count' => 3)
   def assert_enqueued(options = {})
-    enqueue_assertion(strategy.jobs, options)
+    enqueue_expectation(:assert, options)
   end
 
 
@@ -77,8 +77,7 @@ module BeanCounter::MiniTest
   def assert_enqueues(options = {})
     raise ArgumentError, 'Block required' unless block_given?
 
-    found = strategy.collect_new_jobs { yield }
-    enqueue_assertion(found, options)
+    enqueue_expectation(:assert, options, &Proc.new)
   end
 
 
@@ -108,10 +107,7 @@ module BeanCounter::MiniTest
   #
   #   assert_tube('current-jobs-ready' => 1..10)
   def assert_tube(options = {})
-    match = strategy.tubes.any? do |tube|
-      strategy.tube_matches?(tube, options)
-    end
-    assert match, "Assertion failed: No tubes found matching #{options.to_s}"
+    tube_expectation(:assert, :failure_message, options)
   end
 
 
@@ -139,7 +135,7 @@ module BeanCounter::MiniTest
   #
   #   refute_enqueued('state' => 'buried')
   def refute_enqueued(options = {})
-    enqueue_refutation(strategy.jobs, options)
+    enqueue_expectation(:refute, options)
   end
 
 
@@ -174,8 +170,7 @@ module BeanCounter::MiniTest
   def refute_enqueues(options = {})
     raise ArgumentError, 'Block required' unless block_given?
 
-    found = strategy.collect_new_jobs { yield }
-    enqueue_refutation(found, options)
+    enqueue_expectation(:refute, options, &Proc.new)
   end
 
 
@@ -205,61 +200,28 @@ module BeanCounter::MiniTest
   #
   #   refute_tube('current-jobs-ready' => 0)
   def refute_tube(options = {})
-    match = strategy.tubes.detect do |tube|
-      strategy.tube_matches?(tube, options)
-    end
-    return assert(true) if match.nil?
-    assert(
-      false,
-      [
-        "Assertion failed: Expected no tubes matching #{options.to_s},",
-        "found #{strategy.pretty_print_tube(match)}",
-      ].join(' ')
-    )
+    tube_expectation(:refute, :negative_failure_message, options)
   end
 
   private
 
 
-  # Method that actually evaluates if any matching jobs were found and makes
-  # the appropriate assertion.
-  def enqueue_assertion(collection, options)
-    expected_count = options[:count] || options['count']
-    found = collection.send(expected_count ? :select : :detect) do |job|
-      strategy.job_matches?(job, options)
-    end
-    if expected_count
-      assert(
-        expected_count === found.length,
-        [
-          "Assertion failed: Expected #{expected_count} jobs matching #{options.to_s},",
-          "found #{found.length}:",
-          found.map { |job| strategy.pretty_print_job(job) }.join("\n") || '[]',
-        ].join(' ')
-     )
-    else
-      assert !found.nil?, "Assertion failed: No jobs found matching #{options.to_s}"
-    end
+  # Builds job expectation object, evaluates and makes appropriate assertion
+  # with appropriate failure message
+  def enqueue_expectation(assertion_method, options, &block)
+    message_type = assertion_method == :assert ? :failure_message : :negative_failure_message
+    expectation = BeanCounter::EnqueuedExpectation.new(options)
+    match = expectation.matches?(block_given? ? block : nil)
+    send(assertion_method, match, expectation.send(message_type))
   end
 
 
-  # Method that actually verifies no matching jobs were found and makes the
-  # appropriate assertion.
-  def enqueue_refutation(collection, options)
-    found = collection.detect do |job|
-      strategy.job_matches?(job, options)
-    end
-    message = [
-      "Assertion failed: Expected no jobs found matching #{options.to_s},",
-      "found #{strategy.pretty_print_job(found)}",
-    ].join(' ') unless found.nil?
-    refute(found, message || '')
-  end
-
-
-  # Shortcut to BeanCounter strategy in use
-  def strategy
-    return BeanCounter.strategy
+  # Builds tube expectation object, evaluates and makes appropriate assertion
+  # with appropriate failure message
+  def tube_expectation(assertion_method, message_type, options)
+    expectation = BeanCounter::TubeExpectation.new(options)
+    match = expectation.matches?
+    send(assertion_method, match, expectation.send(message_type))
   end
 
 end
