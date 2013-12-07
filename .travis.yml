@@ -13,6 +13,8 @@ before_install:
   - ./beanstalkd &
   - cd $TRAVIS_BUILD_DIR
 
+script: bundle exec rake test_all
+
 matrix:
   allow_failures:
     - rvm: jruby-19mode
