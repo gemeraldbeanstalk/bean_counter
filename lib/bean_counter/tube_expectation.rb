@@ -14,7 +14,8 @@ class BeanCounter::TubeExpectation
   # Builds the failure message used in the event of a positive expectation
   # failure
   def failure_message
-    return "expected tubes matching #{expected.to_s}, found none."
+    return '' unless found.nil?
+    return "expected tube matching #{expected.to_s}, found none."
   end
 
 
@@ -43,7 +44,7 @@ class BeanCounter::TubeExpectation
   #
   # See also BeanCounter::MiniTest and/or BeanCounter::RSpec for additional
   # information.
-  def matches?
+  def matches?(given = nil)
     @found = strategy.tubes.detect do |tube|
       strategy.tube_matches?(tube, expected)
     end

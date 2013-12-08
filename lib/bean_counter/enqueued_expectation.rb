@@ -21,6 +21,8 @@ class BeanCounter::EnqueuedExpectation
       strategy.job_matches?(job, expected)
     end
 
+    @found = [@found] unless expected_count? || @found.nil?
+
     expected_count? ? expected_count === found.to_a.length : !found.nil?
   end
 
@@ -34,18 +36,18 @@ class BeanCounter::EnqueuedExpectation
   # Builds the failure message used in the event of a positive expectation
   # failure
   def failure_message
-    if found.kind_of?(Array)
+    if found.nil?
+      found_count = 'none'
+      found_string = nil
+    else
       found_count = "#{found.length}:"
       found_string = found.map {|job| strategy.pretty_print_job(job) }.join("\n")
-    else
-      found_count = 'none.'
-      found_string = ''
     end
     [
       "expected #{expected_count || 'any number of'} jobs matching #{expected.to_s},",
       "found #{found_count}",
-       found_string,
-    ].join(' ')
+      found_string,
+    ].compact.join(' ')
   end
 
 
@@ -86,12 +88,10 @@ class BeanCounter::EnqueuedExpectation
   # See also BeanCounter::MiniTest and/or BeanCounter::RSpec for additional
   # information.
   def matches?(given = nil)
-    if given.nil?
-      collection_matcher(strategy.jobs)
-    elsif given.kind_of?(Proc)
-      proc_matcher(given)
+    if given.kind_of?(Proc)
+      return proc_matcher(given)
     else
-      raise ArgumentError, "Can't do something"
+      return collection_matcher(strategy.jobs)
     end
   end
 
@@ -99,17 +99,19 @@ class BeanCounter::EnqueuedExpectation
   # Builds the failure message used in the event of a negative expectation
   # failure
   def negative_failure_message
-    if found.nil?
-      return ''
-    elsif found.kind_of?(Array)
-      found_count = found.length
-      found_string = found.map {|job| strategy.pretty_print_job(job) }.join("\n")
+    return '' if found.nil? || found == []
+
+    found_count = found.length
+    found_string = found.map {|job| strategy.pretty_print_job(job) }.join("\n")
+    if expected_count?
+      job_count = expected_count
+      job_word = expected_count == 1 ? 'job' : 'jobs'
     else
-      found_count = 1
-      found_string = strategy.pretty_print_job(found)
+      job_count = 'any'
+      job_word = 'jobs'
     end
     return [
-      "expected no jobs matching #{expected.to_s},",
+      "did not expect #{job_count} #{job_word} matching #{expected.to_s},",
       "found #{found_count}:",
        found_string,
     ].join(' ')

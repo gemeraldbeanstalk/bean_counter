@@ -10,7 +10,7 @@ class MiniTestTest < BeanCounter::TestCase
   end
 
 
-  # Fuller testing of strategies handled by strategy tests
+  # Fuller testing of assertions handled by matcher and strategy tests.
   # Just make sure assertions work as expected at high level
   context 'simple job assertions' do
 
