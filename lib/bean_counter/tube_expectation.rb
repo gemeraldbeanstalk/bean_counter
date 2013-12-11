@@ -27,7 +27,7 @@ class BeanCounter::TubeExpectation
   # against. All attribute comparisons are performed using the triple equal
   # (===) operator/method of the given _value_.
   #
-  # See BeanCounter::MiniTest and/or BeanCounter::RSpec for more information.
+  # See BeanCounter::MiniTest and/or BeanCounter::SpecMatchers for more information.
   def initialize(expected)
     @expected = expected
   end
@@ -42,7 +42,7 @@ class BeanCounter::TubeExpectation
   # in use for more detailed information on how it is determined whether or not
   # a tube matches the options expected.
   #
-  # See also BeanCounter::MiniTest and/or BeanCounter::RSpec for additional
+  # See also BeanCounter::MiniTest and/or BeanCounter::SpecMatchers for additional
   # information.
   def matches?(given = nil)
     @found = strategy.tubes.detect do |tube|

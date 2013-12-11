@@ -3,7 +3,7 @@ require 'securerandom'
 
 # Fuller testing of matchers handled by strategy and matcher tests. Just make
 # sure matchers work as expected at high level
-describe BeanCounter::Spec do
+describe BeanCounter::SpecMatchers do
 
   before(:each) do
     BeanCounter.reset!

@@ -34,13 +34,10 @@ if RUBY_PLATFORM == 'java'
   end
 end
 
-
 BeanCounter.beanstalkd_url = 'beanstalk://localhost'
-
 
 class BeanCounter::TestCase < MiniTest::Should::TestCase
 
-  include BeanCounter::MiniTest
   include Timeout
 
 

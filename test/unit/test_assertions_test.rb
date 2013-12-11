@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MiniTestTest < BeanCounter::TestCase
+class TestAssertionsTest < BeanCounter::TestCase
 
   setup do
     BeanCounter.reset!

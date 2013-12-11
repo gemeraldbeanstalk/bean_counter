@@ -62,7 +62,7 @@ class BeanCounter::EnqueuedExpectation
   # +expected+ may additionally include a _count_ key of 'count' or :count that
   # can be used to specify that a particular number of matching jobs are found.
   #
-  # See BeanCounter::MiniTest and/or BeanCounter::RSpec for more information.
+  # See BeanCounter::TestAssertions and/or BeanCounter::SpecMatchers for more information.
   def initialize(expected)
     @expected = expected
     @expected_count = [expected.delete(:count), expected.delete('count')].compact.first
@@ -85,7 +85,7 @@ class BeanCounter::EnqueuedExpectation
   # in use for more detailed information on how it is determined whether or not
   # a job matches the options expected.
   #
-  # See also BeanCounter::MiniTest and/or BeanCounter::RSpec for additional
+  # See also BeanCounter::TestAssertions and/or BeanCounter::SpecMatchers for additional
   # information.
   def matches?(given = nil)
     if given.kind_of?(Proc)

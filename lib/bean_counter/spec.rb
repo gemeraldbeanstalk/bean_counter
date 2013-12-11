@@ -1,11 +1,5 @@
-module BeanCounter::Spec
+require 'bean_counter/spec_matchers'
 
-  def have_enqueued(expected)
-    BeanCounter::EnqueuedExpectation.new(expected)
-  end
-
-  def have_tube(expected)
-    BeanCounter::TubeExpectation.new(expected)
-  end
-
+if defined?(RSpec)
+  RSpec.configuration.include(BeanCounter::SpecMatchers)
 end
