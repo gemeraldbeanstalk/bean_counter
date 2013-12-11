@@ -40,8 +40,9 @@ class BeanCounter::EnqueuedExpectation
       found_count = 'none'
       found_string = nil
     else
-      found_count = "#{found.length}:"
-      found_string = found.map {|job| strategy.pretty_print_job(job) }.join("\n")
+      materialized_found = found.to_a
+      found_count = "#{materialized_found.length}:"
+      found_string = materialized_found.map {|job| strategy.pretty_print_job(job) }.join("\n")
     end
     [
       "expected #{expected_count || 'any number of'} jobs matching #{expected.to_s},",
