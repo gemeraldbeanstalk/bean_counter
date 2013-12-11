@@ -177,9 +177,10 @@ compared against. All attribute comparisons are performed using the triple-equal
 (===) operator/method of the given value.
 
 #####assert_enqueued/have_enqueued
-The attributes available on a job for comparison are: 'age', 'body', 'buries',
-'connection', 'delay', 'id', 'kicks', 'pri', 'releases', 'reserves', 'state',
-'time-left', 'timeouts', 'ttr', and 'tube'.
+The attributes available on a job for comparison are: ```age```, ```body```,
+```buries```, ```connection```, ```delay```, ```id```, ```kicks```, ```pri```,
+```releases```, ```reserves```, ```state```, ```time-left```, ```timeouts```,
+```ttr```, and ```tube```.
 
 To assert or set the expectation that a job with the body of 'foo'
 should have been enqueued on the default tube you could use the following:
@@ -259,11 +260,12 @@ Hash is a String or a Symbol that identifies an attribute of a tube that the
 corresponding Hash value should be compared against. All attribute comparisons
 are performed using the triple-equal (===) operator/method of the given value.
 
-The attributes available on a tube for matching are: 'cmd-delete',
-'cmd-pause-tube', 'current-jobs-buried', 'current-jobs-delayed',
-'current-jobs-ready', :'current-jobs-reserved', 'current-jobs-urgent',
-'current-using', 'current-waiting', 'current-watching', 'name', 'pause',
-'pause-time-left', and 'total-jobs'.
+The attributes available on a tube for matching are: ```cmd-delete```,
+```cmd-pause-tube```, ```current-jobs-buried```, ```current-jobs-delayed```,
+```current-jobs-ready```, ```current-jobs-reserved```,
+```current-jobs-urgent```, ```current-using```, ```current-waiting```,
+```current-watching```, ```name```, ```pause```, ```pause-time-left```,
+and ```total-jobs```.
 
 For example to assert that no connections are waiting on the default tube
 something like the following could be used:
@@ -285,12 +287,15 @@ verify that the exports tube is paused:
   should_not have_tube(:name => 'exports', :pause => 0)
 ```
 
-For more detailed explanations and more examples make sure to check out the docs
-and respective tests:
-[test_assertions](https://github.com/gemeraldbeanstalk/bean_counter/lib/bean_counter/test_assertions.rb)
-[spec_matchers](https://github.com/gemeraldbeanstalk/bean_counter/lib/bean_counter/spec_matchers.rb)
-[test_assertions_test](https://github.com/gemeraldbeanstalk/bean_counter/test/unit/test_assertions_test.rb)
-[spec_spec](https://github.com/gemeraldbeanstalk/bean_counter/spec/spec_spec.rb)
+For more detailed explanations and more examples make sure to check out the
+docs, expectations, and respective tests:  
+[docs](http://rubydoc.info/gems/bean_counter/0.0.1/frames)  
+[enqueued_expectation](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/enqueued_expectation.rb)  
+[tube_expectation](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/tube_expectation.rb)  
+[test_assertions](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/test_assertions.rb)  
+[spec_matchers](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/spec_matchers.rb)  
+[test_assertions_test](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/test/unit/test_assertions_test.rb)  
+[spec_spec](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/spec/spec_spec.rb)
 
 ## Contributing
 
