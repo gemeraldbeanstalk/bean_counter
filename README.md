@@ -1,5 +1,6 @@
 # BeanCounter
 
+[![Gem Version](https://badge.fury.io/rb/bean_counter.png)](http://badge.fury.io/rb/bean_counter)
 [![Build Status](https://secure.travis-ci.org/gemeraldbeanstalk/bean_counter.png)](http://travis-ci.org/gemeraldbeanstalk/bean_counter)
 [![Dependency Status](https://gemnasium.com/gemeraldbeanstalk/bean_counter.png)](https://gemnasium.com/gemeraldbeanstalk/bean_counter)
 [![Coverage Status](https://coveralls.io/repos/gemeraldbeanstalk/bean_counter/badge.png?branch=master)](https://coveralls.io/r/gemeraldbeanstalk/bean_counter)
