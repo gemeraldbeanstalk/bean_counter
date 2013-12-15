@@ -1,0 +1,7 @@
+--output-dir doc/
+--readme README.md
+--title BeanCounter
+--markup=markdown
+--protected
+--private
+lib/bean_counter/**/*.rb
