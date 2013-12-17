@@ -312,7 +312,7 @@ verify that the exports tube is paused:
 For more detailed explanations and more examples make sure to check out the
 docs, expectations, and respective tests:
 
-- [docs](http://rubydoc.info/gems/bean_counter/0.0.3/frames)
+- [docs](http://rubydoc.info/gems/bean_counter/0.0.4/frames)
 - [enqueued_expectation](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/enqueued_expectation.rb)
 - [tube_expectation](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/tube_expectation.rb)
 - [test_assertions](https://github.com/gemeraldbeanstalk/bean_counter/tree/master/lib/bean_counter/test_assertions.rb)
