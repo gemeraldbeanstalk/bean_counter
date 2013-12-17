@@ -4,18 +4,27 @@ class BeanCounter::EnqueuedExpectation
 
   def_delegators BeanCounter, :strategy
 
-  # The value that the expectation expects
+  # The Hash of options given at instantiation that the expectation expects when
+  # matching.
+  # @return [Hash]
   attr_reader :expected
 
   # The number of matching jobs the expectation expects
+  # @return [Numeric, Range]
   attr_reader :expected_count
 
   # The jobs found by the expecation during matching
+  # @return [Array<Strategy::Job>]
   attr_reader :found
 
 
   # Iterates over the provided collection searching for jobs matching the
-  # Hash of expected options provided at instantiation.
+  # Hash of expected options provided during instantiation.
+  #
+  # @param collection [Array<Strategy::Job>] A collection of jobs as
+  #   implemented by the strategy to evaluate for a match.
+  # @return [Boolean] true if the collection matches the expected options and
+  #   count
   def collection_matcher(collection)
     @found = collection.send(expected_count? ? :select : :detect) do |job|
       strategy.job_matches?(job, expected)
@@ -28,13 +37,19 @@ class BeanCounter::EnqueuedExpectation
 
 
   # Returns a Boolean indicating whether a specific number of jobs are expected.
+  #
+  # @return [Boolean] true if a specifc number of jobs are expected, otherwise
+  #   false
   def expected_count?
     return !!expected_count
   end
 
 
   # Builds the failure message used in the event of a positive expectation
-  # failure
+  # failure.
+  #
+  # @return [String] The failure message for use in the event of a positive
+  #   expectation failure.
   def failure_message
     if found.nil?
       found_count = 'none'
@@ -52,18 +67,28 @@ class BeanCounter::EnqueuedExpectation
   end
 
 
-  # Create a new enqueued expectation. Uses the given +expected+ Hash to determine
+  # Create a new enqueued expectation. Uses the given `expected` Hash to determine
   # if any jobs are enqueued that match the expected options.
   #
-  # Each _key_ in +expected+ is a String or a Symbol that identifies an attribute
-  # of a job that the corresponding _value_ should be compared against. All attribute
-  # comparisons are performed using the triple equal (===) operator/method of
-  # the given _value_.
+  # Each `key` in `expected` is a String or a Symbol that identifies an attribute
+  # of a job that the corresponding `value` should be compared against. All attribute
+  # comparisons are performed using the triple-equal (===) operator/method of
+  # the given `value`.
   #
-  # +expected+ may additionally include a _count_ key of 'count' or :count that
+  # `expected` may additionally include a `count` key of 'count' or :count that
   # can be used to specify that a particular number of matching jobs are found.
   #
-  # See BeanCounter::TestAssertions and/or BeanCounter::SpecMatchers for more information.
+  # See {BeanCounter::Strategy::MATCHABLE_JOB_ATTRIBUTES} for a list of
+  #   attributes that can be used when matching.
+  #
+  # @see BeanCounter::Strategy::MATCHABLE_JOB_ATTRIBUTES
+  # @see BeanCounter::TestAssertions
+  # @see BeanCounter::SpecMatchers
+  # @param expected
+  #   [Hash{String, Symbol => Numeric, Proc, Range, Regexp, String, Symbol}]
+  #   Options expected when evaluating match
+  # @option expected [Numeric, Range] :count (nil) A particular number of matching
+  #   jobs expected
   def initialize(expected)
     @expected = expected
     @expected_count = [expected.delete(:count), expected.delete('count')].compact.first
@@ -73,12 +98,12 @@ class BeanCounter::EnqueuedExpectation
   # Checks the beanstalkd pool for jobs matching the Hash of expected options
   # provided at instantiation.
   #
-  # If no _count_ option is provided, the expectation succeeds if any job is found
+  # If no `count` option is provided, the expectation succeeds if any job is found
   # that matches all of the expected options. If no jobs are found that match the
   # expected options, the expecation fails.
   #
-  # If a _count_ option is provided the expectation only succeeds if the triple equal
-  # (===) operator/method of the value of _count_ evaluates to true when given the
+  # If a `count` option is provided the expectation only succeeds if the triple-equal
+  # (===) operator/method of the value of `count` evaluates to true when given the
   # total number of matching jobs. Otherwise the expecation fails. The use of ===
   # allows for more advanced comparisons using Procs, Ranges, Regexps, etc.
   #
@@ -86,8 +111,17 @@ class BeanCounter::EnqueuedExpectation
   # in use for more detailed information on how it is determined whether or not
   # a job matches the options expected.
   #
-  # See also BeanCounter::TestAssertions and/or BeanCounter::SpecMatchers for additional
-  # information.
+  # See {BeanCounter::Strategy::MATCHABLE_JOB_ATTRIBUTES} for a list of
+  #   attributes that can be used when matching.
+  #
+  # @see BeanCounter::Strategy::MATCHABLE_JOB_ATTRIBUTES
+  # @see BeanCounter::TestAssertions
+  # @see BeanCounter::SpecMatchers
+  # @param given [Proc] If a Proc is provided, only jobs enqueued during the
+  #   execution of the Proc are considered when looking for a match. Otherwise
+  #   all jobs available to the strategy will be evaluated for a match.
+  # @return [Boolean] If a match is found, returns true. Otherwise, returns
+  #   false.
   def matches?(given = nil)
     if given.kind_of?(Proc)
       return proc_matcher(given)
@@ -99,6 +133,9 @@ class BeanCounter::EnqueuedExpectation
 
   # Builds the failure message used in the event of a negative expectation
   # failure
+  #
+  # @return [String] The failure message for use in the event of a negative
+  #   expectation failure.
   def negative_failure_message
     return '' if found.nil? || found == []
 
@@ -119,13 +156,17 @@ class BeanCounter::EnqueuedExpectation
   end
 
 
-  # Monitors the beanstalkd pool for new jobs enqueued during the provided
-  # block than passes any collected jobs to the collection matcher to determine
-  # if any jobs were enqueued that match the expected options provided at
-  # instantiation
+  # Evaluates jobs enqueued during the execution of the provided block to
+  # determine if any jobs were enqueued that match the expected options provided
+  # at instantiation
+  #
+  # @param block [Proc] A Proc that when executed should demonstrate that
+  #   expected behavior.
+  # @return [Boolean] If the jobs enqueued during the execution of the `block`
+  #   include a match, returns true. Otherwise, returns false.
   def proc_matcher(block)
     new_jobs = strategy.collect_new_jobs(&block)
-    collection_matcher(new_jobs)
+    return collection_matcher(new_jobs)
   end
 
 end
