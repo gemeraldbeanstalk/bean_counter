@@ -1,3 +1,4 @@
+require 'debugger'
 require 'coveralls'
 Coveralls.wear_merged!
 
@@ -41,8 +42,30 @@ class BeanCounter::TestCase < MiniTest::Should::TestCase
   include Timeout
 
 
+  def self.create_test_gemerald_beanstalks
+    return if class_variable_defined?(:@@gemerald_strategy)
+    @@gemerald_addrs ||= ['127.0.0.1:11400', '127.0.0.1:11401']
+    previous_urls = BeanCounter.beanstalkd_url
+    BeanCounter.beanstalkd_url = @@gemerald_addrs
+    @@gemerald_strategy = BeanCounter::Strategy::GemeraldBeanstalkStrategy.new
+    @@gemerald_beanstalks = @@gemerald_strategy.send(:beanstalks)
+    clients_by_address = @@gemerald_beanstalks.map do |beanstalk|
+      [beanstalk.address, beanstalk.direct_connection_client]
+    end
+    @@gemerald_clients = Hash[clients_by_address]
+    BeanCounter.beanstalkd_url = previous_urls
+  end
+
+
   def client
     return @client ||= Beaneater::Connection.new('localhost:11300')
+  end
+
+
+  def gemerald_client(gemerald_addr = nil)
+    self.class.create_test_gemerald_beanstalks
+    gemerald_addr ||= @@gemerald_addrs.first
+    return @@gemerald_clients[gemerald_addr]
   end
 
 end

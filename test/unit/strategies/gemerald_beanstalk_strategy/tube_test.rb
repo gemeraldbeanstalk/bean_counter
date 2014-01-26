@@ -32,11 +32,6 @@ class GemeraldBeanstalkStrategyTubeTest < BeanCounter::TestCase
     end
 
 
-    teardown do
-      destroy_test_beanstalks
-    end
-
-
     context '#exists' do
 
       should 'return true if the tube exists, false otherwise' do
@@ -55,7 +50,7 @@ class GemeraldBeanstalkStrategyTubeTest < BeanCounter::TestCase
         client.transmit("watch #{@tube_name}")
         @tube = @strategy.send(:strategy_tube, @tube_name)
 
-        other_client = client(@server_addrs.last)
+        other_client = client(@@gemerald_addrs.last)
         other_client.transmit("watch #{@tube_name}")
       end
 
@@ -92,25 +87,17 @@ class GemeraldBeanstalkStrategyTubeTest < BeanCounter::TestCase
   end
 
 
-  def client(server_addr = @server_addrs.first)
-    return @clients[server_addr]
+  def client(addr = nil)
+    self.class.create_test_gemerald_beanstalks
+    addr ||= @@gemerald_addrs.first
+    return @@gemerald_clients[addr]
   end
 
 
   def create_test_beanstalks
-    @server_addrs = ['127.0.0.1:11400', '127.0.0.1:11401']
-    BeanCounter.expects(:beanstalkd_url).returns(@server_addrs)
-    @strategy = BeanCounter::Strategy::GemeraldBeanstalkStrategy.new
-    @beanstalks = @strategy.send(:beanstalks)
-    clients_by_address = @beanstalks.map do |beanstalk|
-      [beanstalk.address, beanstalk.direct_connection_client]
-    end
-    @clients = Hash[clients_by_address]
-  end
-
-
-  def destroy_test_beanstalks
-    @strategy.send(:beanstalk_servers).map(&:stop)
+    self.class.create_test_gemerald_beanstalks
+    @strategy = @@gemerald_strategy
+    @beanstalks = @@gemerald_beanstalks
   end
 
 end

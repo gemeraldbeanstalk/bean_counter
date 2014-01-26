@@ -101,11 +101,6 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
     end
 
 
-    teardown do
-      destroy_test_beanstalks
-    end
-
-
     context 'enumerators' do
 
       %w[jobs tubes].each do |enumerator|
@@ -145,9 +140,11 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
       context '#jobs' do
 
         should 'get actual jobs when not mocked' do
+          @strategy.jobs.each do |job|
+            assert @strategy.delete_job(job)
+          end
           @beanstalks.each_with_index do |beanstalk, index|
-            c = Beaneater::Connection.new(beanstalk.address)
-            c.transmit("put 0 0 120 1\r\n#{index}")
+            beanstalk.direct_connection_client.transmit("put 0 0 120 1\r\n#{index}")
           end
           @strategy.jobs.each_with_index do |job, index|
             assert_kind_of BeanCounter::Strategy::GemeraldBeanstalkStrategy::Job, job
@@ -162,7 +159,7 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
 
         should 'get merged tube stats when not mocked' do
           shared_tube = SecureRandom.uuid
-          tube_names = @clients.values.map do |client|
+          tube_names = @@gemerald_clients.values.map do |client|
             tube_name = SecureRandom.uuid
             client.transmit("watch #{tube_name}")
             client.transmit("watch #{shared_tube}")
@@ -197,7 +194,7 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
 
       should 'only return jobs enqueued during the execution of the given block' do
         tube_name = message = SecureRandom.uuid
-        other_client = client(@server_addrs.last)
+        other_client = client(@@gemerald_addrs.last)
         [client, other_client].each do |gb_client|
           gb_client.transmit("use #{tube_name}")
           gb_client.transmit("watch #{tube_name}")
@@ -264,6 +261,7 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
         job = strategy_job(client, job_id)
         assert_equal 'reserved', job.state
         refute @strategy.delete_job(job), 'Expected deleting job reserved by other client to fail'
+        other_client.transmit("delete #{job_id}")
       end
 
     end
@@ -414,7 +412,7 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
         client.transmit("watch #{@tube_name}")
         @tube = strategy_tube(@tube_name)
 
-        other_client = client(@server_addrs.last)
+        other_client = client(@@gemerald_addrs.last)
         other_client.transmit("watch #{@tube_name}")
       end
 
@@ -551,25 +549,15 @@ class GemeraldBeanstalkStrategyTest < BeanCounter::TestCase
   end
 
 
-  def client(server_addr = @server_addrs.first)
-    return @clients[server_addr]
+  def client(addr = nil)
+    return gemerald_client(addr)
   end
 
 
   def create_test_beanstalks
-    @server_addrs = ['127.0.0.1:11400', '127.0.0.1:11401']
-    BeanCounter.expects(:beanstalkd_url).returns(@server_addrs)
-    @strategy = BeanCounter::Strategy::GemeraldBeanstalkStrategy.new
-    @beanstalks = @strategy.send(:beanstalks)
-    clients_by_address = @beanstalks.map do |beanstalk|
-      [beanstalk.address, beanstalk.direct_connection_client]
-    end
-    @clients = Hash[clients_by_address]
-  end
-
-
-  def destroy_test_beanstalks
-    @strategy.send(:beanstalk_servers).map(&:stop)
+    self.class.create_test_gemerald_beanstalks
+    @strategy = @@gemerald_strategy
+    @beanstalks = @@gemerald_beanstalks
   end
 
 
