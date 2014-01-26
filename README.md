@@ -172,15 +172,41 @@ BeanCounter.beanstalkd_url
 ###BeanCounter.strategy
 `BeanCounter.strategy` allows you to choose and configure the strategy
 BeanCounter uses for accessing and interacting with the beanstalkd pool. At
-present, there is only a single strategy available, but at least one other is
-in the works.
+present, there are two strategies available: StalkClimberStrategy and
+GemeraldBeanstalkStrategy.
 
-The strategy currently available, BeanCounter::Strategy::StalkClimber, utilizes
+The default BeanCounter::Strategy::StalkClimber strategy utilizes
 [StalkClimber](https://github.com/gemeraldbeanstalk/stalk_climber.git) to
 navigate the beanstalkd pool. The job traversal method employed by StalkClimber
 suffers from some inefficiencies that come with trying to sequential access a
 queue, but overall it is a powerful strategy that supports multiple servers and
 offers solid performance given the design of beanstalkd.
+
+The BeanCounter::Strategy::GemeraldBeanstalkStrategy strategy utilizes
+[GemeraldBeanstalk](https://github.com/gemeraldbeanstalk/gemerald_beanstalk.git)
+servers as the backend for Beaneater. This means that no beanstalkd server is
+required for testing. Beaneater still connects and communicates with
+GemeraldBeanstalk via a TCPSocket, however BeanCounter is able to talk directly
+to the GemeraldBeanstalk servers allowing for faster and more consistent testing.
+When using the GemeraldBeanstalkStrategy, BeanCounter will automatically start
+a GemeraldBeanstalk server at each of the addresses specified by beanstalkd_url.
+
+```ruby
+# No configuration is required to use the StalkClimberStrategy
+
+# To use the GemeraldBeanstalkStrategy
+BeanCounter.strategy = :'BeanCounter::Strategy::GemeraldBeanstalkStrategy'
+  #=> :"BeanCounter::Strategy::GemeraldBeanstalkStrategy"
+
+# Because the GemeraldBeanstalkStrategy starts a GemeraldBeanstalk server
+# immediately, you may want to configure a different address/port for
+# your GemeraldBeanstalk servers to avoid conflicts when you have a Beanstalkd
+# server running:
+BeanCounter.beanstalkd_url = ['127.0.0.1:11400']
+BeanCounter.strategy = :'BeanCounter::Strategy::GemeraldBeanstalkStrategy'
+  #=> :"BeanCounter::Strategy::GemeraldBeanstalkStrategy"
+```
+
 
 ## Usage
 Whether you are using the TestUnit/MiniTest or RSpec matchers, the usage is the
