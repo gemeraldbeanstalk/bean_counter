@@ -307,8 +307,8 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
         'current-waiting' => current_waiting = 108,
         'current-watching' => current_watching = 109,
         'name' => name = tube_name,
-        'pause-time-left' => pause_time_left = 110,
         'pause' => pause = 111,
+        'pause-time-left' => pause_time_left = 110,
         'total-jobs' => total_jobs = 112,
       })
       connection_pool = @strategy.send(:climber).connection_pool
@@ -392,6 +392,19 @@ class StalkClimberStrategyTest < BeanCounter::TestCase
       end
       @tube.expects(:exists?).times(tube_attrs.length * 4).returns(true)
       verify_attrs(@tube, tube_attrs)
+    end
+
+
+    should 'be able to match with a proc' do
+      matching_name_proc = proc do |name|
+        name == @tube_name
+      end
+      assert @strategy.tube_matches?(@tube, :name => matching_name_proc)
+
+      failing_name_proc = proc do |name|
+        name != @tube_name
+      end
+      refute @strategy.tube_matches?(@tube, :name => failing_name_proc)
     end
 
 

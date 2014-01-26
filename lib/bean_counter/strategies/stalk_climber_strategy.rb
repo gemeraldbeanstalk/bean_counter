@@ -69,7 +69,7 @@ class BeanCounter::Strategy::StalkClimberStrategy < BeanCounter::Strategy
   end
 
 
-  # Returns a Boolean indicating whether or not the provided Sta`kClimber::Job
+  # Returns a Boolean indicating whether or not the provided StalkClimber::Job
   # `job` matches the given Hash of `options`.
   #
   # See {MATCHABLE_JOB_ATTRIBUTES} for a list of

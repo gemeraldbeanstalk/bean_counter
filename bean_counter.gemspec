@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'beaneater'
   spec.add_dependency 'stalk_climber', '>= 0.1.0'
+  spec.add_dependency 'gemerald_beanstalk', '>= 0.0.1'
 
   spec.add_development_dependency 'bundler', '~> 1.3'
   spec.add_development_dependency 'rake'
