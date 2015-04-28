@@ -154,7 +154,7 @@ class BeanCounter::EnqueuedExpectation
        found_string,
     ].join(' ')
   end
-
+  alias failure_message_when_negated negative_failure_message
 
   # Evaluates jobs enqueued during the execution of the provided block to
   # determine if any jobs were enqueued that match the expected options provided
